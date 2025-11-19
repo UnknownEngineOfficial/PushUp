@@ -68,6 +68,55 @@ This app requires state management across multiple views (workout entry, statist
 - **Progression**: Settings → Export Data → Choose format (CSV) → Download file → Confirmation
 - **Success criteria**: File includes all sessions, sets, timestamps, variants, notes; importable into spreadsheet software
 
+### Undo Last Set
+- **Functionality**: Remove the last added set within 3 seconds of adding it
+- **Purpose**: Correct accidental entries or mistakes without losing session progress
+- **Trigger**: Floating "Undo" button appears after adding a set
+- **Progression**: Add set accidentally → See undo button → Tap to remove → Set removed
+- **Success criteria**: Last set removed instantly; button disappears after 3 seconds or after undo
+
+### Workout Templates
+- **Functionality**: Pre-built workout routines with multiple sets that can be started instantly
+- **Purpose**: Quick workout starts, structured training, variety in workouts
+- **Trigger**: "Quick Start Template" button on workout view when no sets logged
+- **Progression**: Open workout → Tap Quick Start → Select template (Pyramid, 100 Club, etc.) → Sets auto-populated → Begin training
+- **Success criteria**: Templates include 4+ preset routines; custom templates can be created; all sets from template added to session
+
+### Weekly Goal Progress
+- **Functionality**: Visual progress bar showing current week's reps vs weekly goal
+- **Purpose**: Keep users motivated during workouts by showing goal proximity
+- **Trigger**: Automatic display on workout view when weekly goal is set
+- **Progression**: Set weekly goal → Start workout → See progress bar update in real-time → Reach goal → Visual celebration
+- **Success criteria**: Progress bar accurate; updates immediately after each set; displays percentage and actual numbers
+
+### Performance Insights
+- **Functionality**: Best training time of day, average set size, peak performance metrics
+- **Purpose**: Help users understand when they perform best and optimize training schedules
+- **Trigger**: Automatically calculated and displayed on workout view and statistics
+- **Progression**: Complete 3+ sessions → View workout screen → See "Best Time" and "Avg Session" cards → Use insights to plan training
+- **Success criteria**: Accurate calculations; displayed only when sufficient data exists (3+ sessions)
+
+### Achievements System
+- **Functionality**: Unlockable achievements for milestones (first session, 100 reps, streaks, etc.)
+- **Purpose**: Gamification, motivation, sense of progression beyond numbers
+- **Trigger**: Automatic unlock when criteria met; viewable in statistics tab
+- **Progression**: Complete milestone action → Achievement unlocks → Visual badge displayed → Progress shown for locked achievements
+- **Success criteria**: 6+ unique achievements; progress bars for locked achievements; visual distinction between locked/unlocked
+
+### Variant Analytics
+- **Functionality**: Pie chart and breakdown of total volume by push-up variant
+- **Purpose**: Identify training imbalances; encourage variety in workouts
+- **Trigger**: Statistics view when multiple variants have been used
+- **Progression**: Train with different variants → View statistics → See pie chart and breakdown → Adjust training to balance variants
+- **Success criteria**: Chart updates in real-time; percentages accurate; color-coded for clarity
+
+### History Filtering
+- **Functionality**: Filter session history by push-up variant
+- **Purpose**: Review progress on specific variants; track variant-specific training
+- **Trigger**: Filter dropdown in history view
+- **Progression**: Open history → Select variant filter → View filtered sessions → See count of filtered results → Clear filter to show all
+- **Success criteria**: Filter works instantly; shows session count; easy to clear filter; preserves session details when filtered
+
 ## Edge Case Handling
 
 - **Accidental Tap**: Undo button appears for 3 seconds after any rep addition, allowing instant correction

@@ -43,6 +43,13 @@ function App() {
     setCurrentSets((prevSets) => [...prevSets, newSet])
   }
 
+  const handleUndoLastSet = () => {
+    setCurrentSets((prevSets) => prevSets.slice(0, -1))
+    if (currentSets.length === 1) {
+      setSessionStartTime(null)
+    }
+  }
+
   const handleEndSession = () => {
     if (currentSets.length === 0) {
       toast.error('No sets to save')
@@ -123,8 +130,11 @@ function App() {
         {currentView === 'workout' && (
           <WorkoutView
             currentSets={currentSets}
+            sessions={safeSession}
+            goals={safeGoals}
             onAddReps={handleAddReps}
             onEndSession={handleEndSession}
+            onUndoLastSet={handleUndoLastSet}
           />
         )}
         {currentView === 'statistics' && (

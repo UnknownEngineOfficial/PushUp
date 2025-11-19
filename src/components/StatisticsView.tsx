@@ -1,9 +1,10 @@
 import { Card } from '@/components/ui/card'
 import { TrainingSession, PersonalRecord } from '@/lib/types'
-import { Trophy, Fire, ChartLine, Target } from '@phosphor-icons/react'
+import { Trophy, Fire, ChartLine, Target, ClockClockwise, TrendUp } from '@phosphor-icons/react'
 import { Badge } from '@/components/ui/badge'
-import { getLast7DaysVolume, getDailyReps, getWeeklyReps, getMonthlyReps } from '@/lib/stats'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+import { getLast7DaysVolume, getDailyReps, getWeeklyReps, getMonthlyReps, getVolumeByVariant, getBestTimeOfDay, getAverageSetReps } from '@/lib/stats'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell } from 'recharts'
+import { AchievementsCard } from '@/components/AchievementsCard'
 
 interface StatisticsViewProps {
   sessions: TrainingSession[]
@@ -15,8 +16,25 @@ export function StatisticsView({ sessions, personalRecords }: StatisticsViewProp
   const weekReps = getWeeklyReps(sessions, new Date())
   const monthReps = getMonthlyReps(sessions, new Date())
   const last7Days = getLast7DaysVolume(sessions)
+  const volumeByVariant = getVolumeByVariant(sessions)
+  const bestTime = getBestTimeOfDay(sessions)
+  const avgSetReps = getAverageSetReps(sessions)
 
   const totalReps = sessions.reduce((sum, s) => sum + s.totalReps, 0)
+
+  const variantData = Object.entries(volumeByVariant).map(([variant, reps]) => ({
+    name: variant,
+    value: reps
+  })).sort((a, b) => b.value - a.value)
+
+  const COLORS = [
+    'hsl(var(--primary))',
+    'hsl(var(--secondary))',
+    'hsl(var(--accent))',
+    'hsl(var(--chart-1))',
+    'hsl(var(--chart-2))',
+    'hsl(var(--chart-3))'
+  ]
 
   return (
     <div className="flex flex-col gap-6 px-6 py-8 max-w-6xl mx-auto">
@@ -97,6 +115,80 @@ export function StatisticsView({ sessions, personalRecords }: StatisticsViewProp
         </div>
       </Card>
 
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {bestTime && (
+          <Card className="p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <ClockClockwise className="text-accent" size={24} weight="bold" />
+              <div className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Peak Hour</div>
+            </div>
+            <div className="font-display font-bold text-3xl">{bestTime.hour}:00</div>
+            <p className="text-sm text-muted-foreground mt-1">{bestTime.avgReps} avg reps</p>
+          </Card>
+        )}
+        <Card className="p-6">
+          <div className="flex items-center gap-3 mb-2">
+            <TrendUp className="text-secondary" size={24} weight="bold" />
+            <div className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Avg Set</div>
+          </div>
+          <div className="font-display font-bold text-3xl">{avgSetReps}</div>
+          <p className="text-sm text-muted-foreground mt-1">reps per set</p>
+        </Card>
+        <Card className="p-6">
+          <div className="flex items-center gap-3 mb-2">
+            <Target className="text-primary" size={24} weight="bold" />
+            <div className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Total Sets</div>
+          </div>
+          <div className="font-display font-bold text-3xl">
+            {sessions.reduce((sum, s) => sum + s.sets.length, 0)}
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">all time</p>
+        </Card>
+      </div>
+
+      {variantData.length > 0 && (
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Volume by Variant</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="h-64 flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={variantData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {variantData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="space-y-2">
+              {variantData.map((variant, index) => (
+                <div key={variant.name} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-4 h-4 rounded" 
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    />
+                    <span className="font-medium">{variant.name}</span>
+                  </div>
+                  <span className="font-display font-semibold text-lg">{variant.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-4">
@@ -155,6 +247,8 @@ export function StatisticsView({ sessions, personalRecords }: StatisticsViewProp
           </div>
         </Card>
       </div>
+
+      <AchievementsCard sessions={sessions} />
     </div>
   )
 }

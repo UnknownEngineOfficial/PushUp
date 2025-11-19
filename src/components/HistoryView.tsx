@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { TrainingSession } from '@/lib/types'
-import { Calendar, Note, ListChecks, Trash } from '@phosphor-icons/react'
+import { Calendar, Note, ListChecks, Trash, Funnel } from '@phosphor-icons/react'
 import { format } from 'date-fns'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import {
@@ -23,7 +25,17 @@ interface HistoryViewProps {
 }
 
 export function HistoryView({ sessions, onDeleteSession }: HistoryViewProps) {
-  const sortedSessions = [...sessions].sort((a, b) => 
+  const [variantFilter, setVariantFilter] = useState<string>('all')
+  
+  const allVariants = Array.from(
+    new Set(sessions.flatMap(s => s.sets.map(set => set.variant)))
+  ).sort()
+
+  const filteredSessions = variantFilter === 'all' 
+    ? sessions 
+    : sessions.filter(s => s.sets.some(set => set.variant === variantFilter))
+  
+  const sortedSessions = [...filteredSessions].sort((a, b) => 
     new Date(b.date).getTime() - new Date(a.date).getTime() ||
     b.startTime - a.startTime
   )
@@ -48,7 +60,40 @@ export function HistoryView({ sessions, onDeleteSession }: HistoryViewProps) {
         <p className="text-muted-foreground">Your training sessions</p>
       </div>
 
-      {sessions.length === 0 ? (
+      {allVariants.length > 0 && (
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <Funnel size={20} weight="bold" className="text-muted-foreground" />
+            <Select value={variantFilter} onValueChange={setVariantFilter}>
+              <SelectTrigger className="w-full md:w-[200px]">
+                <SelectValue placeholder="Filter by variant" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Variants</SelectItem>
+                {allVariants.map(variant => (
+                  <SelectItem key={variant} value={variant}>{variant}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {variantFilter !== 'all' && (
+              <Badge variant="secondary">
+                {filteredSessions.length} session{filteredSessions.length !== 1 ? 's' : ''}
+              </Badge>
+            )}
+          </div>
+        </Card>
+      )}
+
+      {filteredSessions.length === 0 && variantFilter !== 'all' ? (
+        <Card className="p-12 text-center">
+          <Funnel className="mx-auto mb-4 text-muted-foreground" size={48} weight="light" />
+          <h3 className="text-xl font-semibold mb-2">No sessions found</h3>
+          <p className="text-muted-foreground mb-4">No sessions with {variantFilter} variant</p>
+          <Button variant="outline" onClick={() => setVariantFilter('all')}>
+            Clear Filter
+          </Button>
+        </Card>
+      ) : sessions.length === 0 ? (
         <Card className="p-12 text-center">
           <Calendar className="mx-auto mb-4 text-muted-foreground" size={48} weight="light" />
           <h3 className="text-xl font-semibold mb-2">No sessions yet</h3>

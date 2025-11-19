@@ -140,3 +140,44 @@ export function exportToCSV(sessions: TrainingSession[]): string {
 export function exportToJSON(sessions: TrainingSession[]): string {
   return JSON.stringify(sessions, null, 2)
 }
+
+export function getBestTimeOfDay(sessions: TrainingSession[]): { hour: number; avgReps: number } | null {
+  if (sessions.length === 0) return null
+  
+  const hourlyStats: Record<number, { totalReps: number; count: number }> = {}
+  
+  sessions.forEach(session => {
+    const hour = new Date(session.startTime).getHours()
+    if (!hourlyStats[hour]) {
+      hourlyStats[hour] = { totalReps: 0, count: 0 }
+    }
+    hourlyStats[hour].totalReps += session.totalReps
+    hourlyStats[hour].count++
+  })
+  
+  let bestHour = 0
+  let bestAvg = 0
+  
+  Object.entries(hourlyStats).forEach(([hour, stats]) => {
+    const avg = stats.totalReps / stats.count
+    if (avg > bestAvg) {
+      bestAvg = avg
+      bestHour = parseInt(hour)
+    }
+  })
+  
+  return bestAvg > 0 ? { hour: bestHour, avgReps: Math.round(bestAvg) } : null
+}
+
+export function getSessionAverage(sessions: TrainingSession[]): number {
+  if (sessions.length === 0) return 0
+  const totalReps = sessions.reduce((sum, s) => sum + s.totalReps, 0)
+  return Math.round(totalReps / sessions.length)
+}
+
+export function getAverageSetReps(sessions: TrainingSession[]): number {
+  const allSets = sessions.flatMap(s => s.sets)
+  if (allSets.length === 0) return 0
+  const totalReps = allSets.reduce((sum, set) => sum + set.reps, 0)
+  return Math.round(totalReps / allSets.length)
+}

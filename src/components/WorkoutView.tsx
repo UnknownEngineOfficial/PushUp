@@ -3,24 +3,40 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Plus, ClockCountdown, Note, Check } from '@phosphor-icons/react'
-import { PushUpVariant, PushUpSet, SetType, DEFAULT_VARIANTS } from '@/lib/types'
+import { Progress } from '@/components/ui/progress'
+import { Plus, ClockCountdown, Note, Check, ArrowCounterClockwise, Trophy, Target, TrendUp, Lightning } from '@phosphor-icons/react'
+import { PushUpVariant, PushUpSet, SetType, DEFAULT_VARIANTS, TrainingSession, Goal, WorkoutTemplate } from '@/lib/types'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
+import { getWeeklyReps, getSessionAverage, getBestTimeOfDay } from '@/lib/stats'
+import { WorkoutTemplateDialog } from '@/components/WorkoutTemplateDialog'
+import { useKV } from '@github/spark/hooks'
 
 interface WorkoutViewProps {
   currentSets: PushUpSet[]
+  sessions: TrainingSession[]
+  goals: Goal[]
   onAddReps: (reps: number, variant: PushUpVariant, type: SetType) => void
   onEndSession: () => void
+  onUndoLastSet: () => void
 }
 
-export function WorkoutView({ currentSets, onAddReps, onEndSession }: WorkoutViewProps) {
+export function WorkoutView({ currentSets, sessions, goals, onAddReps, onEndSession, onUndoLastSet }: WorkoutViewProps) {
   const [selectedVariant, setSelectedVariant] = useState<PushUpVariant>('Regular')
   const [selectedType, setSelectedType] = useState<SetType>('regular')
   const [customReps, setCustomReps] = useState('')
   const [lastAction, setLastAction] = useState<{ reps: number; timestamp: number } | null>(null)
   const [restTimer, setRestTimer] = useState(0)
   const [isResting, setIsResting] = useState(false)
+  const [templates] = useKV<WorkoutTemplate[]>('workout-templates', [])
+
+  const handleStartTemplate = (template: WorkoutTemplate) => {
+    template.sets.forEach((set, index) => {
+      setTimeout(() => {
+        onAddReps(set.reps, set.variant, set.type)
+      }, index * 100)
+    })
+  }
 
   useEffect(() => {
     let interval: number | undefined
@@ -52,8 +68,10 @@ export function WorkoutView({ currentSets, onAddReps, onEndSession }: WorkoutVie
   }
 
   const handleUndo = () => {
-    if (lastAction && Date.now() - lastAction.timestamp < 3000) {
-      toast.info('Undo feature - coming in next update')
+    if (lastAction && Date.now() - lastAction.timestamp < 3000 && currentSets.length > 0) {
+      onUndoLastSet()
+      setLastAction(null)
+      toast.success('Last set removed')
     }
   }
 
@@ -69,14 +87,69 @@ export function WorkoutView({ currentSets, onAddReps, onEndSession }: WorkoutVie
   }
 
   const totalRepsToday = currentSets.reduce((sum, set) => sum + set.reps, 0)
+  const weeklyReps = getWeeklyReps(sessions, new Date())
+  const sessionAverage = getSessionAverage(sessions)
+  const bestTime = getBestTimeOfDay(sessions)
+  
+  const activeWeeklyGoal = goals.find(g => g.type === 'weekly' && g.isActive)
+  const weeklyProgress = activeWeeklyGoal ? Math.min((weeklyReps / activeWeeklyGoal.target) * 100, 100) : 0
 
   return (
     <div className="flex flex-col gap-6 px-6 py-8 max-w-2xl mx-auto">
       <div className="text-center">
         <h1 className="text-3xl font-bold tracking-tight mb-2">Workout</h1>
         <div className="font-display font-bold text-7xl text-primary mb-1">{totalRepsToday}</div>
-        <p className="text-muted-foreground uppercase text-sm tracking-wider font-medium">Reps Today</p>
+        <p className="text-muted-foreground uppercase text-sm tracking-wider font-medium">Reps in Current Session</p>
       </div>
+
+      {activeWeeklyGoal && (
+        <Card className="p-4 bg-secondary/30">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Target size={20} weight="bold" className="text-secondary" />
+              <span className="font-semibold text-sm">Weekly Goal</span>
+            </div>
+            <span className="text-sm font-semibold">{weeklyReps} / {activeWeeklyGoal.target}</span>
+          </div>
+          <Progress value={weeklyProgress} className="h-2" />
+        </Card>
+      )}
+
+      {sessions.length >= 3 && (
+        <div className="grid grid-cols-2 gap-3">
+          <Card className="p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <TrendUp size={16} weight="bold" className="text-accent" />
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Avg Session</span>
+            </div>
+            <div className="font-display font-bold text-2xl">{sessionAverage}</div>
+          </Card>
+          {bestTime && (
+            <Card className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Trophy size={16} weight="bold" className="text-accent" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Best Time</span>
+              </div>
+              <div className="font-display font-bold text-2xl">{bestTime.hour}:00</div>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {currentSets.length === 0 && (
+        <div className="flex justify-center">
+          <WorkoutTemplateDialog 
+            templates={templates || []} 
+            onStartTemplate={handleStartTemplate}
+            trigger={
+              <Button variant="outline" size="lg" className="gap-2">
+                <Lightning weight="fill" />
+                Quick Start Template
+              </Button>
+            }
+          />
+        </div>
+      )}
 
       <Card className="p-6">
         <div className="space-y-4">
@@ -254,15 +327,16 @@ export function WorkoutView({ currentSets, onAddReps, onEndSession }: WorkoutVie
       )}
 
       <AnimatePresence>
-        {lastAction && Date.now() - lastAction.timestamp < 3000 && (
+        {lastAction && Date.now() - lastAction.timestamp < 3000 && currentSets.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed bottom-24 left-1/2 -translate-x-1/2"
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 md:bottom-6 z-50"
           >
-            <Button variant="secondary" onClick={handleUndo}>
-              Undo last action
+            <Button variant="secondary" onClick={handleUndo} className="shadow-lg gap-2">
+              <ArrowCounterClockwise weight="bold" />
+              Undo last set
             </Button>
           </motion.div>
         )}

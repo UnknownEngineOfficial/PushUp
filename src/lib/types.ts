@@ -39,6 +39,18 @@ export interface Goal {
   isActive: boolean
 }
 
+export interface WorkoutTemplate {
+  id: string
+  name: string
+  description?: string
+  sets: {
+    reps: number
+    variant: PushUpVariant
+    type: SetType
+  }[]
+  createdAt: number
+}
+
 export interface PersonalRecord {
   maxSingleSet: { reps: number; date: string; variant: PushUpVariant }
   maxSessionVolume: { reps: number; date: string }
