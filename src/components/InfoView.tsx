@@ -3,7 +3,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Heart, Barbell, Info, FirstAid } from '@phosphor-icons/react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
-import { PushUpAnimation } from '@/components/PushUpAnimation'
 
 export function InfoView() {
   return (
@@ -51,9 +50,6 @@ export function InfoView() {
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="space-y-3 text-muted-foreground">
-                      <div className="mb-4 bg-muted/30 rounded-lg p-4">
-                        <PushUpAnimation variant="regular" />
-                      </div>
                       <p>
                         <strong className="text-foreground">Die klassische Liegestütze</strong> - perfekt für Anfänger und als Basis-Übung.
                       </p>
@@ -81,9 +77,6 @@ export function InfoView() {
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="space-y-3 text-muted-foreground">
-                      <div className="mb-4 bg-muted/30 rounded-lg p-4">
-                        <PushUpAnimation variant="wide" />
-                      </div>
                       <p>
                         <strong className="text-foreground">Breite Liegestütze</strong> - stärker Fokus auf die äußere Brust.
                       </p>
@@ -110,9 +103,6 @@ export function InfoView() {
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="space-y-3 text-muted-foreground">
-                      <div className="mb-4 bg-muted/30 rounded-lg p-4">
-                        <PushUpAnimation variant="close" />
-                      </div>
                       <p>
                         <strong className="text-foreground">Enge Liegestütze</strong> - mehr Fokus auf Trizeps und innere Brust.
                       </p>
@@ -139,9 +129,6 @@ export function InfoView() {
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="space-y-3 text-muted-foreground">
-                      <div className="mb-4 bg-muted/30 rounded-lg p-4">
-                        <PushUpAnimation variant="diamond" />
-                      </div>
                       <p>
                         <strong className="text-foreground">Diamant-Liegestütze</strong> - maximaler Trizeps-Fokus.
                       </p>
@@ -168,9 +155,6 @@ export function InfoView() {
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="space-y-3 text-muted-foreground">
-                      <div className="mb-4 bg-muted/30 rounded-lg p-4">
-                        <PushUpAnimation variant="pike" />
-                      </div>
                       <p>
                         <strong className="text-foreground">Pike-Liegestütze</strong> - gezieltes Schultertraining.
                       </p>
@@ -197,9 +181,6 @@ export function InfoView() {
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="space-y-3 text-muted-foreground">
-                      <div className="mb-4 bg-muted/30 rounded-lg p-4">
-                        <PushUpAnimation variant="decline" />
-                      </div>
                       <p>
                         <strong className="text-foreground">Erhöhte Liegestütze</strong> - mehr Intensität durch erhöhte Füße.
                       </p>
@@ -226,9 +207,6 @@ export function InfoView() {
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="space-y-3 text-muted-foreground">
-                      <div className="mb-4 bg-muted/30 rounded-lg p-4">
-                        <PushUpAnimation variant="archer" />
-                      </div>
                       <p>
                         <strong className="text-foreground">Archer-Liegestütze</strong> - Vorbereitung für einarmige Push-Ups.
                       </p>
