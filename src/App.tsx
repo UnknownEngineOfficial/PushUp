@@ -7,17 +7,18 @@ import { StatisticsView } from '@/components/StatisticsView'
 import { HistoryView } from '@/components/HistoryView'
 import { GoalsView } from '@/components/GoalsView'
 import { SettingsView } from '@/components/SettingsView'
+import { InfoView } from '@/components/InfoView'
 import { SessionNotesDialog } from '@/components/SessionNotesDialog'
 import { TrainingSession, PushUpSet, Goal, PushUpVariant, SetType } from '@/lib/types'
 import { calculatePersonalRecords } from '@/lib/stats'
 import { format } from 'date-fns'
-import { ListChecks, ChartLine, Calendar, Target, Gear } from '@phosphor-icons/react'
+import { ListChecks, ChartLine, Calendar, Target, Gear, BookOpen } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 function App() {
   const [sessions, setSessions] = useKV<TrainingSession[]>('training-sessions', [])
   const [goals, setGoals] = useKV<Goal[]>('goals', [])
-  const [currentView, setCurrentView] = useState<'workout' | 'statistics' | 'history' | 'goals' | 'settings'>('workout')
+  const [currentView, setCurrentView] = useState<'workout' | 'statistics' | 'history' | 'goals' | 'info' | 'settings'>('workout')
   const [currentSets, setCurrentSets] = useState<PushUpSet[]>([])
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null)
   const [notesDialogOpen, setNotesDialogOpen] = useState(false)
@@ -152,6 +153,7 @@ function App() {
             onCompleteGoal={handleCompleteGoal}
           />
         )}
+        {currentView === 'info' && <InfoView />}
         {currentView === 'settings' && (
           <SettingsView sessions={safeSession} onClearData={handleClearData} />
         )}
@@ -159,25 +161,29 @@ function App() {
 
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border md:hidden">
         <Tabs value={currentView} onValueChange={(v) => setCurrentView(v as any)} className="w-full">
-          <TabsList className="w-full h-16 rounded-none grid grid-cols-5 bg-card">
+          <TabsList className="w-full h-16 rounded-none grid grid-cols-6 bg-card">
             <TabsTrigger value="workout" className="flex-col gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-              <ListChecks size={24} weight="bold" />
+              <ListChecks size={22} weight="bold" />
               <span className="text-xs">Workout</span>
             </TabsTrigger>
             <TabsTrigger value="statistics" className="flex-col gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-              <ChartLine size={24} weight="bold" />
+              <ChartLine size={22} weight="bold" />
               <span className="text-xs">Stats</span>
             </TabsTrigger>
             <TabsTrigger value="history" className="flex-col gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-              <Calendar size={24} weight="bold" />
+              <Calendar size={22} weight="bold" />
               <span className="text-xs">History</span>
             </TabsTrigger>
             <TabsTrigger value="goals" className="flex-col gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-              <Target size={24} weight="bold" />
+              <Target size={22} weight="bold" />
               <span className="text-xs">Goals</span>
             </TabsTrigger>
+            <TabsTrigger value="info" className="flex-col gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+              <BookOpen size={22} weight="bold" />
+              <span className="text-xs">Info</span>
+            </TabsTrigger>
             <TabsTrigger value="settings" className="flex-col gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-              <Gear size={24} weight="bold" />
+              <Gear size={22} weight="bold" />
               <span className="text-xs">Settings</span>
             </TabsTrigger>
           </TabsList>
@@ -202,6 +208,10 @@ function App() {
             <TabsTrigger value="goals" className="gap-2">
               <Target size={20} weight="bold" />
               Goals
+            </TabsTrigger>
+            <TabsTrigger value="info" className="gap-2">
+              <BookOpen size={20} weight="bold" />
+              Info
             </TabsTrigger>
             <TabsTrigger value="settings" className="gap-2">
               <Gear size={20} weight="bold" />
