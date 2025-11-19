@@ -29,6 +29,8 @@ export function WorkoutView({ currentSets, sessions, goals, onAddReps, onEndSess
   const [restTimer, setRestTimer] = useState(0)
   const [isResting, setIsResting] = useState(false)
   const [templates] = useKV<WorkoutTemplate[]>('workout-templates', [])
+  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null)
+  const [sessionTimer, setSessionTimer] = useState(0)
 
   const handleStartTemplate = (template: WorkoutTemplate) => {
     template.sets.forEach((set, index) => {
@@ -54,6 +56,26 @@ export function WorkoutView({ currentSets, sessions, goals, onAddReps, onEndSess
     }
     return () => clearInterval(interval)
   }, [isResting, restTimer])
+
+  useEffect(() => {
+    let interval: number | undefined
+    if (sessionStartTime) {
+      interval = window.setInterval(() => {
+        setSessionTimer(Math.floor((Date.now() - sessionStartTime) / 1000))
+      }, 1000)
+    } else {
+      setSessionTimer(0)
+    }
+    return () => clearInterval(interval)
+  }, [sessionStartTime])
+
+  useEffect(() => {
+    if (currentSets.length > 0 && !sessionStartTime) {
+      setSessionStartTime(Date.now())
+    } else if (currentSets.length === 0 && sessionStartTime) {
+      setSessionStartTime(null)
+    }
+  }, [currentSets.length])
 
   const handleAddReps = (reps: number) => {
     onAddReps(reps, selectedVariant, selectedType)
@@ -100,6 +122,12 @@ export function WorkoutView({ currentSets, sessions, goals, onAddReps, onEndSess
         <h1 className="text-3xl font-bold tracking-tight mb-2">Workout</h1>
         <div className="font-display font-bold text-7xl text-primary mb-1">{totalRepsToday}</div>
         <p className="text-muted-foreground uppercase text-sm tracking-wider font-medium">Reps in Current Session</p>
+        {sessionTimer > 0 && (
+          <div className="mt-2 flex items-center justify-center gap-2 text-muted-foreground">
+            <ClockCountdown size={16} weight="bold" />
+            <span className="text-sm font-medium">{formatTime(sessionTimer)}</span>
+          </div>
+        )}
       </div>
 
       {activeWeeklyGoal && (

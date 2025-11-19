@@ -1,10 +1,12 @@
 import { Card } from '@/components/ui/card'
 import { TrainingSession, PersonalRecord } from '@/lib/types'
-import { Trophy, Fire, ChartLine, Target, ClockClockwise, TrendUp } from '@phosphor-icons/react'
+import { Trophy, Fire, ChartLine, Target, ClockClockwise, TrendUp, TrendDown, ArrowUp, ArrowDown } from '@phosphor-icons/react'
 import { Badge } from '@/components/ui/badge'
-import { getLast7DaysVolume, getDailyReps, getWeeklyReps, getMonthlyReps, getVolumeByVariant, getBestTimeOfDay, getAverageSetReps } from '@/lib/stats'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { getLast7DaysVolume, getLastNDaysVolume, getLastNMonthsVolume, getAllTimeVolumeByMonth, getDailyReps, getWeeklyReps, getMonthlyReps, getYearlyReps, getVolumeByVariant, getBestTimeOfDay, getAverageSetReps, getProgressComparison } from '@/lib/stats'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell } from 'recharts'
 import { AchievementsCard } from '@/components/AchievementsCard'
+import { useState } from 'react'
 
 interface StatisticsViewProps {
   sessions: TrainingSession[]
@@ -12,10 +14,22 @@ interface StatisticsViewProps {
 }
 
 export function StatisticsView({ sessions, personalRecords }: StatisticsViewProps) {
+  const [volumeRange, setVolumeRange] = useState<'7days' | '30days' | '12months' | 'all'>('7days')
+  
   const todayReps = getDailyReps(sessions, new Date())
   const weekReps = getWeeklyReps(sessions, new Date())
   const monthReps = getMonthlyReps(sessions, new Date())
-  const last7Days = getLast7DaysVolume(sessions)
+  const yearReps = getYearlyReps(sessions, new Date())
+  const progressComparison = getProgressComparison(sessions)
+  
+  const volumeData = volumeRange === '7days' 
+    ? getLast7DaysVolume(sessions)
+    : volumeRange === '30days'
+    ? getLastNDaysVolume(sessions, 30)
+    : volumeRange === '12months'
+    ? getLastNMonthsVolume(sessions, 12)
+    : getAllTimeVolumeByMonth(sessions)
+  
   const volumeByVariant = getVolumeByVariant(sessions)
   const bestTime = getBestTimeOfDay(sessions)
   const avgSetReps = getAverageSetReps(sessions)
@@ -82,22 +96,117 @@ export function StatisticsView({ sessions, personalRecords }: StatisticsViewProp
             <div className="p-2 bg-primary/10 rounded-lg">
               <Fire className="text-primary" size={24} weight="bold" />
             </div>
-            <div className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Streak</div>
+            <div className="text-sm font-medium uppercase tracking-wide text-muted-foreground">This Year</div>
           </div>
-          <div className="font-display font-bold text-4xl">{personalRecords.currentStreak}</div>
-          <p className="text-sm text-muted-foreground mt-1">days</p>
+          <div className="font-display font-bold text-4xl">{yearReps}</div>
+          <p className="text-sm text-muted-foreground mt-1">reps</p>
         </Card>
       </div>
 
+      {sessions.length >= 2 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <TrendUp size={24} weight="bold" className="text-primary" />
+              <h3 className="font-semibold text-lg">Weekly Progress</h3>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">This Week</span>
+                <span className="font-display font-bold text-xl">{progressComparison.thisWeek}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Last Week</span>
+                <span className="font-display font-bold text-xl text-muted-foreground">
+                  {progressComparison.lastWeek}
+                </span>
+              </div>
+              {progressComparison.lastWeek > 0 && (
+                <div className="pt-3 border-t flex items-center justify-between">
+                  <span className="text-sm font-medium">Change</span>
+                  <div className="flex items-center gap-2">
+                    {progressComparison.weekChange > 0 ? (
+                      <>
+                        <ArrowUp size={20} weight="bold" className="text-green-500" />
+                        <span className="font-bold text-green-500">+{progressComparison.weekChange}%</span>
+                      </>
+                    ) : progressComparison.weekChange < 0 ? (
+                      <>
+                        <ArrowDown size={20} weight="bold" className="text-red-500" />
+                        <span className="font-bold text-red-500">{progressComparison.weekChange}%</span>
+                      </>
+                    ) : (
+                      <span className="font-bold text-muted-foreground">0%</span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <TrendUp size={24} weight="bold" className="text-secondary" />
+              <h3 className="font-semibold text-lg">Monthly Progress</h3>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">This Month</span>
+                <span className="font-display font-bold text-xl">{progressComparison.thisMonth}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Last Month</span>
+                <span className="font-display font-bold text-xl text-muted-foreground">
+                  {progressComparison.lastMonth}
+                </span>
+              </div>
+              {progressComparison.lastMonth > 0 && (
+                <div className="pt-3 border-t flex items-center justify-between">
+                  <span className="text-sm font-medium">Change</span>
+                  <div className="flex items-center gap-2">
+                    {progressComparison.monthChange > 0 ? (
+                      <>
+                        <ArrowUp size={20} weight="bold" className="text-green-500" />
+                        <span className="font-bold text-green-500">+{progressComparison.monthChange}%</span>
+                      </>
+                    ) : progressComparison.monthChange < 0 ? (
+                      <>
+                        <ArrowDown size={20} weight="bold" className="text-red-500" />
+                        <span className="font-bold text-red-500">{progressComparison.monthChange}%</span>
+                      </>
+                    ) : (
+                      <span className="font-bold text-muted-foreground">0%</span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+        </div>
+      )}
+
       <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Last 7 Days Volume</h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <h2 className="text-xl font-semibold">Training Volume</h2>
+          <Tabs value={volumeRange} onValueChange={(v) => setVolumeRange(v as any)}>
+            <TabsList>
+              <TabsTrigger value="7days" className="text-xs sm:text-sm">7D</TabsTrigger>
+              <TabsTrigger value="30days" className="text-xs sm:text-sm">30D</TabsTrigger>
+              <TabsTrigger value="12months" className="text-xs sm:text-sm">12M</TabsTrigger>
+              <TabsTrigger value="all" className="text-xs sm:text-sm">All</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={last7Days}>
+            <BarChart data={volumeData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis 
                 dataKey="date" 
-                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
+                angle={volumeRange === 'all' || volumeRange === '30days' ? -45 : 0}
+                textAnchor={volumeRange === 'all' || volumeRange === '30days' ? 'end' : 'middle'}
+                height={volumeRange === 'all' || volumeRange === '30days' ? 80 : 30}
               />
               <YAxis 
                 tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
@@ -136,13 +245,11 @@ export function StatisticsView({ sessions, personalRecords }: StatisticsViewProp
         </Card>
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-2">
-            <Target className="text-primary" size={24} weight="bold" />
-            <div className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Total Sets</div>
+            <Fire className="text-primary" size={24} weight="bold" />
+            <div className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Current Streak</div>
           </div>
-          <div className="font-display font-bold text-3xl">
-            {sessions.reduce((sum, s) => sum + s.sets.length, 0)}
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">all time</p>
+          <div className="font-display font-bold text-3xl">{personalRecords.currentStreak}</div>
+          <p className="text-sm text-muted-foreground mt-1">days in a row</p>
         </Card>
       </div>
 

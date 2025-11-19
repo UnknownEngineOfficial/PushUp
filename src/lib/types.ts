@@ -27,6 +27,8 @@ export interface TrainingSession {
   sets: PushUpSet[]
   notes?: string
   totalReps: number
+  bodyWeight?: number
+  difficulty?: 'easy' | 'moderate' | 'hard' | 'extreme'
 }
 
 export interface Goal {

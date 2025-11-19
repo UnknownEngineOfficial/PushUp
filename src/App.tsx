@@ -59,7 +59,7 @@ function App() {
     setNotesDialogOpen(true)
   }
 
-  const handleSaveSession = (notes: string) => {
+  const handleSaveSession = (notes: string, bodyWeight?: number, difficulty?: 'easy' | 'moderate' | 'hard' | 'extreme') => {
     if (currentSets.length === 0) return
 
     const newSession: TrainingSession = {
@@ -69,7 +69,9 @@ function App() {
       endTime: Date.now(),
       sets: currentSets,
       notes: notes || undefined,
-      totalReps: currentSets.reduce((sum, set) => sum + set.reps, 0)
+      totalReps: currentSets.reduce((sum, set) => sum + set.reps, 0),
+      bodyWeight,
+      difficulty
     }
 
     setSessions((prevSessions) => [...(prevSessions || []), newSession])

@@ -123,6 +123,56 @@ export function getLast7DaysVolume(sessions: TrainingSession[]): { date: string;
   return result
 }
 
+export function getLastNDaysVolume(sessions: TrainingSession[], days: number): { date: string; reps: number }[] {
+  const result: { date: string; reps: number }[] = []
+  
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date()
+    date.setDate(date.getDate() - i)
+    const reps = getDailyReps(sessions, date)
+    result.push({ date: format(date, 'MMM dd'), reps })
+  }
+  
+  return result
+}
+
+export function getLastNMonthsVolume(sessions: TrainingSession[], months: number): { date: string; reps: number }[] {
+  const result: { date: string; reps: number }[] = []
+  
+  for (let i = months - 1; i >= 0; i--) {
+    const date = new Date()
+    date.setMonth(date.getMonth() - i)
+    const start = startOfMonth(date)
+    const end = endOfMonth(date)
+    const reps = calculateTotalReps(sessions, start, end)
+    result.push({ date: format(date, 'MMM yyyy'), reps })
+  }
+  
+  return result
+}
+
+export function getAllTimeVolumeByMonth(sessions: TrainingSession[]): { date: string; reps: number }[] {
+  if (sessions.length === 0) return []
+  
+  const monthlyMap: Record<string, number> = {}
+  
+  sessions.forEach(session => {
+    const sessionDate = parseISO(session.date)
+    const monthKey = format(sessionDate, 'yyyy-MM')
+    if (!monthlyMap[monthKey]) {
+      monthlyMap[monthKey] = 0
+    }
+    monthlyMap[monthKey] += session.totalReps
+  })
+  
+  return Object.entries(monthlyMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, reps]) => ({
+      date: format(parseISO(month + '-01'), 'MMM yyyy'),
+      reps
+    }))
+}
+
 export function exportToCSV(sessions: TrainingSession[]): string {
   let csv = 'Date,Time,Variant,Reps,Set Type,Notes\n'
   
@@ -180,4 +230,48 @@ export function getAverageSetReps(sessions: TrainingSession[]): number {
   if (allSets.length === 0) return 0
   const totalReps = allSets.reduce((sum, set) => sum + set.reps, 0)
   return Math.round(totalReps / allSets.length)
+}
+
+export function getYearlyReps(sessions: TrainingSession[], date: Date): number {
+  const yearStart = new Date(date.getFullYear(), 0, 1)
+  const yearEnd = new Date(date.getFullYear(), 11, 31, 23, 59, 59)
+  return calculateTotalReps(sessions, yearStart, yearEnd)
+}
+
+export function getProgressComparison(sessions: TrainingSession[]): {
+  thisWeek: number
+  lastWeek: number
+  thisMonth: number
+  lastMonth: number
+  weekChange: number
+  monthChange: number
+} {
+  const now = new Date()
+  
+  const thisWeekStart = startOfWeek(now, { weekStartsOn: 1 })
+  const thisWeekEnd = endOfWeek(now, { weekStartsOn: 1 })
+  const lastWeekStart = startOfWeek(new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000), { weekStartsOn: 1 })
+  const lastWeekEnd = endOfWeek(new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000), { weekStartsOn: 1 })
+  
+  const thisMonthStart = startOfMonth(now)
+  const thisMonthEnd = endOfMonth(now)
+  const lastMonthStart = startOfMonth(new Date(now.getFullYear(), now.getMonth() - 1, 1))
+  const lastMonthEnd = endOfMonth(new Date(now.getFullYear(), now.getMonth() - 1, 1))
+  
+  const thisWeek = calculateTotalReps(sessions, thisWeekStart, thisWeekEnd)
+  const lastWeek = calculateTotalReps(sessions, lastWeekStart, lastWeekEnd)
+  const thisMonth = calculateTotalReps(sessions, thisMonthStart, thisMonthEnd)
+  const lastMonth = calculateTotalReps(sessions, lastMonthStart, lastMonthEnd)
+  
+  const weekChange = lastWeek > 0 ? ((thisWeek - lastWeek) / lastWeek) * 100 : 0
+  const monthChange = lastMonth > 0 ? ((thisMonth - lastMonth) / lastMonth) * 100 : 0
+  
+  return {
+    thisWeek,
+    lastWeek,
+    thisMonth,
+    lastMonth,
+    weekChange: Math.round(weekChange),
+    monthChange: Math.round(monthChange)
+  }
 }

@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { TrainingSession } from '@/lib/types'
-import { Calendar, Note, ListChecks, Trash, Funnel } from '@phosphor-icons/react'
+import { Calendar, Note, ListChecks, Trash, Funnel, Barbell, Smiley, SmileyMeh, SmileySad, SmileyXEyes } from '@phosphor-icons/react'
 import { format } from 'date-fns'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import {
@@ -52,6 +52,16 @@ export function HistoryView({ sessions, onDeleteSession }: HistoryViewProps) {
     acc[session.date].push(session)
     return acc
   }, {} as Record<string, TrainingSession[]>)
+
+  const getDifficultyIcon = (difficulty?: string) => {
+    switch (difficulty) {
+      case 'easy': return <Smiley size={16} weight="fill" className="text-green-500" />
+      case 'moderate': return <SmileyMeh size={16} weight="fill" className="text-yellow-500" />
+      case 'hard': return <SmileySad size={16} weight="fill" className="text-orange-500" />
+      case 'extreme': return <SmileyXEyes size={16} weight="fill" className="text-red-500" />
+      default: return null
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6 px-6 py-8 max-w-4xl mx-auto">
@@ -126,11 +136,17 @@ export function HistoryView({ sessions, onDeleteSession }: HistoryViewProps) {
                               <div className="flex items-center gap-3">
                                 <ListChecks size={24} weight="bold" className="text-primary" />
                                 <div className="text-left">
-                                  <div className="font-semibold">
+                                  <div className="font-semibold flex items-center gap-2">
                                     Session at {format(new Date(session.startTime), 'HH:mm')}
+                                    {session.difficulty && getDifficultyIcon(session.difficulty)}
                                   </div>
-                                  <div className="text-sm text-muted-foreground">
-                                    {session.sets.length} sets · {session.totalReps} reps
+                                  <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
+                                    <span>{session.sets.length} sets · {session.totalReps} reps</span>
+                                    {session.bodyWeight && (
+                                      <span className="flex items-center gap-1">
+                                        · <Barbell size={14} weight="bold" /> {session.bodyWeight}kg
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                               </div>

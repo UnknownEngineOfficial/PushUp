@@ -117,6 +117,55 @@ This app requires state management across multiple views (workout entry, statist
 - **Progression**: Open history → Select variant filter → View filtered sessions → See count of filtered results → Clear filter to show all
 - **Success criteria**: Filter works instantly; shows session count; easy to clear filter; preserves session details when filtered
 
+### Multi-Timeframe Volume Charts
+- **Functionality**: View training volume across 7 days, 30 days, 12 months, or all-time with interactive chart
+- **Purpose**: Understand long-term progress patterns and identify trends at different time scales
+- **Trigger**: Tab selection in statistics view volume chart
+- **Progression**: View statistics → Switch to "30D" tab → See daily volume bars for last 30 days → Switch to "12M" → See monthly aggregates
+- **Success criteria**: Charts render smoothly; data aggregates correctly; labels adapt to timeframe (days vs months)
+
+### Session Timer
+- **Functionality**: Automatic workout duration tracking from first set to session end
+- **Purpose**: Monitor workout length for consistency and efficiency
+- **Trigger**: Automatic start on first set; displays below rep counter
+- **Progression**: Log first set → Timer starts automatically → Continue workout → View elapsed time → End session with total duration recorded
+- **Success criteria**: Timer updates every second; displays in MM:SS format; doesn't interfere with workout flow
+
+### Body Weight Tracking
+- **Functionality**: Optional body weight entry (in kg) when completing a session
+- **Purpose**: Track weight changes over time and correlate with performance
+- **Trigger**: Optional field in session completion dialog
+- **Progression**: Complete workout → End session → Enter body weight "75.5kg" → Save → Weight displayed in session history
+- **Success criteria**: Weight stored with session; displayed in history; decimal precision supported
+
+### Difficulty Rating
+- **Functionality**: Rate workout difficulty (Easy, Moderate, Hard, Extreme) with emoji indicators
+- **Purpose**: Track perceived exertion and recovery needs; identify optimal training intensity
+- **Trigger**: Optional selection in session completion dialog with icon buttons
+- **Progression**: Complete workout → End session → Select "Hard" with 😢 icon → Save → Difficulty shows in history with color-coded icon
+- **Success criteria**: Four difficulty levels; visual icons; color coding (green/yellow/orange/red); displays in session history
+
+### Progress Comparison
+- **Functionality**: Week-over-week and month-over-month volume comparison with percentage change
+- **Purpose**: Quantify improvement rate; motivation through visible progress
+- **Trigger**: Automatic display in statistics view when sufficient data exists (2+ weeks/months)
+- **Progression**: View statistics → See "Weekly Progress" card → Compare this week (350 reps) vs last week (280 reps) → See +25% improvement with green arrow
+- **Success criteria**: Accurate calculations; percentage change with up/down arrows; color-coded (green for improvement, red for decline)
+
+### Rest Timer Controls
+- **Functionality**: Quick-start rest timers (60s, 90s, 120s) with skip option
+- **Purpose**: Standardize rest periods; ensure adequate recovery between sets
+- **Trigger**: Rest timer buttons appear after first set is logged
+- **Progression**: Complete set → Tap "90 sec" → Timer counts down → Audio/toast notification when complete → Continue to next set
+- **Success criteria**: Large timer display; skip button always available; notification on completion; timer doesn't block set entry
+
+### Yearly Statistics
+- **Functionality**: Total reps for current calendar year display
+- **Purpose**: Long-term milestone tracking and annual goal setting
+- **Trigger**: Automatic display in statistics overview cards
+- **Progression**: View statistics → See yearly total alongside daily/weekly/monthly stats → Track progress toward yearly goals
+- **Success criteria**: Accurate year-to-date calculation; updates in real-time; resets on January 1st
+
 ## Edge Case Handling
 
 - **Accidental Tap**: Undo button appears for 3 seconds after any rep addition, allowing instant correction
