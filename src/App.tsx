@@ -78,6 +78,17 @@ function App() {
     setCurrentView('statistics')
   }
 
+  const handleCancelSession = () => {
+    toast.info('Session not saved', {
+      description: 'Continue with your current session'
+    })
+  }
+
+  const handleDeleteSession = (sessionId: string) => {
+    setSessions((prevSessions) => (prevSessions || []).filter(s => s.id !== sessionId))
+    toast.success('Session deleted')
+  }
+
   const handleAddGoal = (goalData: Omit<Goal, 'id' | 'createdAt'>) => {
     const newGoal: Goal = {
       ...goalData,
@@ -119,7 +130,7 @@ function App() {
         {currentView === 'statistics' && (
           <StatisticsView sessions={safeSession} personalRecords={personalRecords} />
         )}
-        {currentView === 'history' && <HistoryView sessions={safeSession} />}
+        {currentView === 'history' && <HistoryView sessions={safeSession} onDeleteSession={handleDeleteSession} />}
         {currentView === 'goals' && (
           <GoalsView
             goals={safeGoals}
@@ -192,6 +203,7 @@ function App() {
         open={notesDialogOpen}
         onOpenChange={setNotesDialogOpen}
         onSave={handleSaveSession}
+        onCancel={handleCancelSession}
         initialNotes={sessionNotes}
       />
 

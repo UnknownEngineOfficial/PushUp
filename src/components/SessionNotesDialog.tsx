@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -8,14 +8,34 @@ interface SessionNotesDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSave: (notes: string) => void
+  onCancel: () => void
   initialNotes?: string
 }
 
-export function SessionNotesDialog({ open, onOpenChange, onSave, initialNotes = '' }: SessionNotesDialogProps) {
+export function SessionNotesDialog({ open, onOpenChange, onSave, onCancel, initialNotes = '' }: SessionNotesDialogProps) {
   const [notes, setNotes] = useState(initialNotes)
+
+  useEffect(() => {
+    if (open) {
+      setNotes(initialNotes)
+    }
+  }, [open, initialNotes])
 
   const handleSave = () => {
     onSave(notes)
+    setNotes('')
+    onOpenChange(false)
+  }
+
+  const handleSkip = () => {
+    onSave('')
+    setNotes('')
+    onOpenChange(false)
+  }
+
+  const handleCancel = () => {
+    onCancel()
+    setNotes('')
     onOpenChange(false)
   }
 
@@ -23,7 +43,7 @@ export function SessionNotesDialog({ open, onOpenChange, onSave, initialNotes = 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Session Notes</DialogTitle>
+          <DialogTitle>Session Notes (Optional)</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div>
@@ -38,15 +58,18 @@ export function SessionNotesDialog({ open, onOpenChange, onSave, initialNotes = 
             />
           </div>
           <p className="text-xs text-muted-foreground">
-            Add notes about your technique, how you felt, or any other observations from this session.
+            You can save the session with or without notes, or cancel to continue training.
           </p>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button variant="ghost" onClick={handleCancel} className="sm:mr-auto">
             Cancel
           </Button>
+          <Button variant="outline" onClick={handleSkip}>
+            Skip & Save
+          </Button>
           <Button onClick={handleSave}>
-            Save Notes
+            Save with Notes
           </Button>
         </DialogFooter>
       </DialogContent>
